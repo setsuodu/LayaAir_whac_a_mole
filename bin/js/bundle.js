@@ -89,10 +89,18 @@
         ]
     };
 
+    var GameStatus;
+    (function (GameStatus) {
+        GameStatus[GameStatus["Free"] = 0] = "Free";
+        GameStatus[GameStatus["Game"] = 1] = "Game";
+        GameStatus[GameStatus["Settle"] = 2] = "Settle";
+    })(GameStatus || (GameStatus = {}));
     class game_mgr extends Laya.Script {
         constructor() {
             super();
+            this.CurrentStatus = GameStatus.Free;
             this.currentScore = 0;
+            this.CurrentStatus = GameStatus.Free;
             this.panelWelcome = null;
             this.panelGame = null;
             this.panelSettle = null;
@@ -103,6 +111,7 @@
             this.progressTime = null;
         }
         onStart() {
+            this.CurrentStatus = GameStatus.Free;
             Laya.SoundManager.playMusic("res/sounds/bgm.mp3", 0);
             this.spWelcome = this.panelWelcome;
             this.spWelcome.visible = true;
@@ -110,35 +119,45 @@
             this.spGame.visible = false;
             this.spSettle = this.panelSettle;
             this.spSettle.visible = false;
+            this.progressTime = this.spGame.getChildByName("bg").getChildByName("TimeProgress");
+            this.scoreClip = this.progressTime.getChildByName("GameScore");
             this.btnStart = this.spWelcome.getChildByName("StartGame");
             this.btnStart.on(Laya.Event.CLICK, this, this.onStartGame);
             this.btnRestart = this.spSettle.getChildByName("background").getChildByName("RestartGame");
             this.btnRestart.on(Laya.Event.CLICK, this, this.onRestartGame);
-            this.progressTime = this.spGame.getChildByName("bg").getChildByName("TimeProgress");
-            this.scoreClip = this.progressTime.getChildByName("GameScore");
+            this.settleScore = this.spSettle.getChildByName("background").getChildByName("SettleScore");
         }
         onStartGame() {
+            this.CurrentStatus = GameStatus.Game;
             console.log("开始游戏!");
             this.spWelcome.visible = false;
             this.spGame.visible = true;
             this.spSettle.visible = false;
             this.currentScore = 0;
             this.progressTime.value = 1;
+            this.scoreClip.value = this.currentScore.toString();
+            this.settleScore.value = this.currentScore.toString();
             this.onTimerRun();
             this.spawnMouse();
         }
         onSettleGame() {
+            this.CurrentStatus = GameStatus.Settle;
             this.spWelcome.visible = false;
             this.spGame.visible = true;
             this.spSettle.visible = true;
         }
         onRestartGame() {
+            this.CurrentStatus = GameStatus.Free;
             console.log("重新开始!");
             this.spWelcome.visible = true;
             this.spGame.visible = false;
             this.spSettle.visible = false;
         }
         spawnMouse() {
+            if (this.CurrentStatus != GameStatus.Game) {
+                console.error("游戏未开始：", this.CurrentStatus);
+                return;
+            }
             var m = this.mousePrefab.create();
             this.mouseRoot.addChild(m);
             var holeIndex = Math.random() * 9;
@@ -153,6 +172,8 @@
             Laya.timer.once(time, this, this.spawnMouse);
         }
         onMouseHit(mouseType, holeIndex) {
+            if (this.CurrentStatus != GameStatus.Game)
+                return;
             var m = this.scorePrefab.create();
             this.scoreRoot.addChild(m);
             m.x = game_config.config.score_pos[holeIndex].x;
@@ -161,7 +182,8 @@
             script.showScore(mouseType, holeIndex);
             var addScore = mouseType == 1 ? -100 : 100;
             this.currentScore += addScore;
-            this.scoreClip.value = this.currentScore.toString();
+            this.scoreClip.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
+            this.settleScore.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
         }
         onTimerRun() {
             if (this.progressTime.value <= 0) {

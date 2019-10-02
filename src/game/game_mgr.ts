@@ -2,6 +2,12 @@ import mouse from "./mouse";
 import score from "./score";
 import game_config from "./game_config";
 
+enum GameStatus {
+    Free = 0,
+    Game = 1,
+    Settle = 2
+}
+
 export default class game_mgr extends Laya.Script {
     // private static instance: game_mgr;
     // public static GetInstance(): game_mgr
@@ -10,6 +16,8 @@ export default class game_mgr extends Laya.Script {
     //         this.instance = new game_mgr();
     //     return this.instance;
     // }
+
+    public CurrentStatus: GameStatus = GameStatus.Free;
 
     /** @prop {name:panelWelcome, tips:"欢迎页", type:Node, default:null}*/
     public panelWelcome: Laya.Node;
@@ -35,15 +43,19 @@ export default class game_mgr extends Laya.Script {
     /** @prop {name:scorePrefab, tips:"得分预制体", type:Prefab, default:null}*/
     public scorePrefab: Laya.Prefab;
 
-    private btnStart: Laya.Button;
-    private btnRestart: Laya.Button;
-
+    // 游戏ui
     private progressTime: Laya.ProgressBar;
     private currentScore: number = 0;
-    private scoreClip: Laya.FontClip;
+    public scoreClip: Laya.FontClip;
+
+    // 结算ui
+    private btnStart: Laya.Button;
+    private btnRestart: Laya.Button;
+    public settleScore: Laya.FontClip;
 
     constructor() {
         super();
+        this.CurrentStatus = GameStatus.Free;
         this.panelWelcome = null;
         this.panelGame = null;
         this.panelSettle = null;
@@ -55,8 +67,9 @@ export default class game_mgr extends Laya.Script {
     }
     
     onStart(): void {
+        this.CurrentStatus = GameStatus.Free;
         Laya.SoundManager.playMusic("res/sounds/bgm.mp3", 0);
-        
+
         this.spWelcome = this.panelWelcome as Laya.Sprite;
         this.spWelcome.visible = true;
 
@@ -66,43 +79,61 @@ export default class game_mgr extends Laya.Script {
         this.spSettle = this.panelSettle as Laya.Sprite;
         this.spSettle.visible = false;
         
-        this.btnStart = this.spWelcome.getChildByName("StartGame") as Laya.Button;
-        this.btnStart.on(Laya.Event.CLICK, this, this.onStartGame);
-        
-        this.btnRestart = this.spSettle.getChildByName("background").getChildByName("RestartGame") as Laya.Button;
-        this.btnRestart.on(Laya.Event.CLICK, this, this.onRestartGame);
-
         this.progressTime = this.spGame.getChildByName("bg").getChildByName("TimeProgress") as Laya.ProgressBar;
         this.scoreClip = this.progressTime.getChildByName("GameScore") as Laya.FontClip;
+
+        this.btnStart = this.spWelcome.getChildByName("StartGame") as Laya.Button;
+        this.btnStart.on(Laya.Event.CLICK, this, this.onStartGame);
+
+        this.btnRestart = this.spSettle.getChildByName("background").getChildByName("RestartGame") as Laya.Button;
+        this.btnRestart.on(Laya.Event.CLICK, this, this.onRestartGame);
+        this.settleScore = this.spSettle.getChildByName("background").getChildByName("SettleScore") as Laya.FontClip;
     }
 
+    //#region 流程控制
+
     onStartGame(): void {
+        this.CurrentStatus = GameStatus.Game;
         console.log("开始游戏!");
+
         this.spWelcome.visible = false;
         this.spGame.visible = true;
         this.spSettle.visible = false;
 
         this.currentScore = 0;
         this.progressTime.value = 1;
+        this.scoreClip.value = this.currentScore.toString();
+        this.settleScore.value = this.currentScore.toString();
         this.onTimerRun();
         this.spawnMouse();
     }
 
     onSettleGame(): void {
+        this.CurrentStatus = GameStatus.Settle;
+
         this.spWelcome.visible = false;
         this.spGame.visible = true; //不隐藏，但是停止逻辑
         this.spSettle.visible = true;
     }
 
     onRestartGame(): void {
+        this.CurrentStatus = GameStatus.Free;
         console.log("重新开始!");
+
         this.spWelcome.visible = true;
         this.spGame.visible = false;
         this.spSettle.visible = false;
     }
 
+    //#endregion
+
     // 创建老鼠
     spawnMouse(): void {
+        if(this.CurrentStatus != GameStatus.Game) {
+            console.error("游戏未开始：", this.CurrentStatus);
+            return;
+        }
+
         var m = this.mousePrefab.create(); //克隆预制体
         this.mouseRoot.addChild(m); //移动克隆体到根物体下
 
@@ -124,6 +155,8 @@ export default class game_mgr extends Laya.Script {
 
     // 显示得分
     onMouseHit(mouseType: number, holeIndex: number): void {
+        if(this.CurrentStatus != GameStatus.Game) return;
+        
         // 分数动画
         var m = this.scorePrefab.create(); //克隆预制体
         this.scoreRoot.addChild(m); //移动克隆体到根物体下
@@ -136,7 +169,8 @@ export default class game_mgr extends Laya.Script {
 
         var addScore = mouseType == 1? -100 : 100;
         this.currentScore += addScore;
-        this.scoreClip.value = this.currentScore.toString();
+        this.scoreClip.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
+        this.settleScore.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
     }
 
     // 倒计时
