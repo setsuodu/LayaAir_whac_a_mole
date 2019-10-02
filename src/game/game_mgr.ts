@@ -102,8 +102,8 @@ export default class game_mgr extends Laya.Script {
 
         this.currentScore = 0;
         this.progressTime.value = 1;
-        this.scoreClip.value = this.currentScore.toString();
-        this.settleScore.value = this.currentScore.toString();
+        this.scoreClip.value = "0";
+        this.settleScore.value = "0";
         this.onTimerRun();
         this.spawnMouse();
     }
@@ -169,8 +169,9 @@ export default class game_mgr extends Laya.Script {
 
         var addScore = mouseType == 1? -100 : 100;
         this.currentScore += addScore;
-        this.scoreClip.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
-        this.settleScore.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
+        this.currentScore = (this.currentScore > 0)? this.currentScore: 0;
+        this.scoreClip.value = this.currentScore.toString();
+        this.settleScore.value = this.currentScore.toString();
     }
 
     // 倒计时

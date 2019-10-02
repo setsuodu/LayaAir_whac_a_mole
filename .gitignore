@@ -1,2 +1,4 @@
-/release
-/.rpt2_cache
+release
+.rpt2_cache
+.laya/chrome
+.laya/chrome/*

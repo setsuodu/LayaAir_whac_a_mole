@@ -182,8 +182,9 @@
             script.showScore(mouseType, holeIndex);
             var addScore = mouseType == 1 ? -100 : 100;
             this.currentScore += addScore;
-            this.scoreClip.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
-            this.settleScore.value = (this.currentScore > 0) ? this.currentScore.toString() : "0";
+            this.currentScore = (this.currentScore > 0) ? this.currentScore : 0;
+            this.scoreClip.value = this.currentScore.toString();
+            this.settleScore.value = this.currentScore.toString();
         }
         onTimerRun() {
             if (this.progressTime.value <= 0) {
