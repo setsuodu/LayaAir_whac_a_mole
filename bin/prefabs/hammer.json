@@ -1,0 +1,1 @@
+{"type":"Sprite","props":{"texture":"res/hammer.png","name":"hammer","x":0,"y":0,"width":98,"height":77,"pivotX":79,"pivotY":65,"presetID":1,"isPresetRoot":true},"compId":14,"child":[{"type":"Script","props":{"presetID":2,"runtime":"game/hammer.ts"},"compId":15}],"loadList":["res/hammer.png"],"loadList3D":[]}

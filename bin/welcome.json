@@ -1,0 +1,1 @@
+{"type":"Scene","props":{"width":960,"height":640},"compId":2,"child":[{"type":"Sprite","props":{"y":75,"x":118,"texture":"res/help.png"},"compId":3},{"type":"Button","props":{"y":441,"x":391,"stateNum":2,"skin":"res/btn_start.png"},"compId":4}],"loadList":["res/help.png","res/btn_start.png"],"loadList3D":[]}

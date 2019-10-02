@@ -1,0 +1,1 @@
+{"type":"Image","props":{"skin":"res/score_2.png","name":"score","presetID":1,"isPresetRoot":true,"x":0,"y":0},"compId":44,"child":[{"type":"Script","props":{"presetID":2,"runtime":"game/score.ts"},"compId":45}],"loadList":["res/score_2.png"],"loadList3D":[]}
