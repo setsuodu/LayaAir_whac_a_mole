@@ -1,0 +1,9 @@
+
+*.ts linguist-language=TypeScript
+*.js linguist-language=TypeScript
+*.md linguist-language=TypeScript
+*.css linguist-language=TypeScript
+*.xml linguist-language=TypeScript
+*.html linguist-language=TypeScript
+*.json linguist-language=TypeScript
+*.laya linguist-language=TypeScript
